@@ -25,32 +25,34 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      transition: opacity 0.6s ease;
+      transition: opacity 0.8s ease;
+      z-index: 10;
     }
     #initialScreen.hidden {
       opacity: 0;
       pointer-events: none;
     }
     h1 {
-      font-size: 3rem;
+      font-size: 3.2rem;
       color: #ff3366;
-      text-shadow: 0 0 20px #ff3366;
-      margin-bottom: 2rem;
+      text-shadow: 0 0 25px #ff3366;
+      margin-bottom: 2.5rem;
     }
     input {
-      width: 80%;
-      max-width: 400px;
-      padding: 18px;
-      font-size: 1.4rem;
+      width: 85%;
+      max-width: 420px;
+      padding: 18px 24px;
+      font-size: 1.5rem;
       border: none;
       border-radius: 12px;
-      background: rgba(255,255,255,0.15);
+      background: rgba(255,255,255,0.18);
       color: white;
       text-align: center;
       outline: none;
+      box-shadow: 0 0 20px rgba(0,0,0,0.4);
     }
     input::placeholder {
-      color: #aaa;
+      color: #ccc;
     }
     #videoScreen {
       position: fixed;
@@ -59,27 +61,28 @@
       display: none;
       align-items: center;
       justify-content: center;
+      z-index: 5;
     }
     video {
       width: 100%;
       height: 100%;
-      object-fit: cover;   /* ya contain agar poora dikhana ho */
+      object-fit: cover; /* cover = full screen fill, contain = poora dikhe lekin black bars aa sakte hain */
     }
   </style>
 </head>
 <body>
 
-  <!-- Starting screen (naam daalne wala) -->
+  <!-- Naam daalne wala screen -->
   <div id="initialScreen">
     <h1>Apna Naam Likh Do... 😏</h1>
-    <input type="text" id="name" placeholder="Minimum 3 letter" autocomplete="off" autofocus>
+    <input type="text" id="name" placeholder="Minimum 3 akshar" autocomplete="off" autofocus>
   </div>
 
-  <!-- Full screen video (sirf yahi dikhega baad mein) -->
+  <!-- Fullscreen prank video -->
   <div id="videoScreen">
     <video id="prankVideo" autoplay loop muted playsinline>
       <source id="videoSrc" src="" type="video/mp4">
-      Browser video support nahi kar raha
+      Sorry, video load nahi ho raha...
     </video>
   </div>
 
@@ -91,45 +94,49 @@
     const source        = document.getElementById('videoSrc');
 
     // ────────────────────────────────────────────────
-    // Sirf yeh 4 lines badlo apne hisaab se
-    const USERNAME = "nsti";
+    // Yeh values bilkul sahi hain ab
+    const USERNAME = "copai093-ops";
     const REPO     = "prank";
-    const FILE     = "2";          // agar extension hai to "2.mp4" likh do
+    const FILE     = "2";               // repo mein extension nahi hai
     const BRANCH   = "main";
     // ────────────────────────────────────────────────
 
     const videoURL = `https://raw.githubusercontent.com/${USERNAME}/${REPO}/${BRANCH}/${FILE}`;
 
-    // Agar GitHub Pages use kar rahe ho to yeh URL try kar sakte ho:
-    // const videoURL = `https://${USERNAME}.github.io/${REPO}/${FILE}`;
-
     nameInput.addEventListener('input', () => {
       const text = nameInput.value.trim();
 
       if (text.length >= 3) {
-        // Video set karo
         source.src = videoURL;
         video.load();
 
-        // Starting screen fade out + hide
+        // Fade out initial screen
         initialScreen.classList.add('hidden');
+
         setTimeout(() => {
           initialScreen.style.display = 'none';
           videoScreen.style.display = 'flex';
 
-          // Video play karo (autoplay attribute hai, phir bhi safe taraf)
-          video.play().catch(() => {
-            // Mobile pe muted autoplay ke liye
+          // Force play (mobile ke liye muted rakha hai)
+          video.play().catch(err => {
+            console.log("Autoplay blocked:", err);
             video.muted = true;
             video.play();
           });
-        }, 600); // fade ke baad hide
+        }, 800); // fade animation ke baad
       }
     });
 
-    // Optional: video load fail hone pe kuch dikhao (debug ke liye)
+    // Agar video nahi chalta to error screen
     video.onerror = () => {
-      document.body.innerHTML = '<h1 style="color:white; text-align:center; margin-top:40vh;">Video nahi mila 😢<br>Repo public banao + file check karo</h1>';
+      document.body.innerHTML = `
+        <div style="color:white; text-align:center; margin-top:40vh; font-size:1.5rem;">
+          Video nahi chal raha 😢<br><br>
+          Possible reasons:<br>
+          1. File "2" corrupt hai ya upload galat hua<br>
+          2. Browser MP4 bina extension ke nahi chala raha<br><br>
+          <small>Try karo: file ko rename karke "prank.mp4" banao aur code mein FILE = "prank.mp4" kar do</small>
+        </div>`;
     };
   </script>
 
