@@ -29,7 +29,7 @@
       position:absolute; top:20px; right:20px; z-index:20;
       padding:12px 20px; font-size:1.1rem; background:#ff3366; color:white;
       border:none; border-radius:50px; cursor:pointer; box-shadow:0 0 15px #ff3366;
-      display:none; /* shuru mein hide */
+      display:none;
     }
     #unmuteBtn:hover { background:#ff1a4d; }
   </style>
@@ -43,7 +43,7 @@
   </div>
 
   <div id="videoScreen">
-    <button id="unmuteBtn">🔊 Sound On</button>
+    <button id="unmuteBtn">🔊 Sound On (agar nahi chal raha ho)</button>
     <video id="prankVideo" autoplay loop playsinline>
       <source id="videoSrc" src="" type="video/mp4">
       Video load nahi ho raha...
@@ -60,7 +60,7 @@
 
     const USERNAME = "copai093-ops";
     const REPO     = "prank";
-    const FILE     = "2";  // agar rename kiya to yahan "prank.mp4" etc. daal dena
+    const FILE     = "2";  // agar .mp4 rename kiya to yahan update kar dena
     const BRANCH   = "main";
 
     const videoURL = `https://raw.githubusercontent.com/${USERNAME}/${REPO}/${BRANCH}/${FILE}`;
@@ -74,24 +74,34 @@
         initialScreen.style.display = 'none';
         videoScreen.style.display = 'flex';
 
-        // Autoplay muted se shuru
-        video.muted = true;
-        video.play().catch(() => video.play());
+        // Try unmuted autoplay
+        video.muted = false;
+        video.volume = 1.0;
 
-        // Sound button dikhao (user click karega to unmute)
-        unmuteBtn.style.display = 'block';
+        const playPromise = video.play();
+
+        playPromise.then(() => {
+          // Success: sound chal gaya (kuch browsers allow kar sakte hain)
+          unmuteBtn.style.display = 'none';
+        }).catch(err => {
+          console.log("Unmuted play blocked:", err);
+          // Fallback: muted play karo + button dikhao
+          video.muted = true;
+          video.play();
+          unmuteBtn.style.display = 'block';
+        });
       }
     });
 
-    // Unmute button click pe sound on
+    // User click pe force unmute
     unmuteBtn.addEventListener('click', () => {
       video.muted = false;
-      video.volume = 1.0;  // full volume
-      unmuteBtn.style.display = 'none';  // hide after unmute
+      video.volume = 1.0;
+      unmuteBtn.style.display = 'none';
     });
 
     video.onerror = () => {
-      document.body.innerHTML = '<div style="color:white; text-align:center; margin-top:40vh; font-size:1.5rem;">Video nahi chal raha 😢<br>Check: file rename + .mp4 extension daalo</div>';
+      document.body.innerHTML = '<div style="color:white; text-align:center; margin-top:40vh; font-size:1.5rem;">Video nahi chal raha 😢<br>File check karo ya rename karke .mp4 banao</div>';
     };
   </script>
 
