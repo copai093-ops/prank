@@ -3,126 +3,134 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Prank - Naam Daalo 😈</title>
+  <title>Prank Mode 😈</title>
   <style>
-    body {
-      font-family: 'Segoe UI', Arial, sans-serif;
-      background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
-      color: #fff;
+    * {
       margin: 0;
-      padding: 20px;
-      min-height: 100vh;
-      text-align: center;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      background: #000;
+      height: 100vh;
+      overflow: hidden;
+      font-family: Arial, sans-serif;
+    }
+    #initialScreen {
+      position: fixed;
+      inset: 0;
+      background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+      color: white;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      transition: opacity 0.6s ease;
+    }
+    #initialScreen.hidden {
+      opacity: 0;
+      pointer-events: none;
     }
     h1 {
+      font-size: 3rem;
       color: #ff3366;
-      text-shadow: 0 0 10px #ff3366;
-      margin: 30px 0;
-    }
-    .container {
-      max-width: 500px;
-      margin: 0 auto;
-      background: rgba(0, 0, 0, 0.6);
-      padding: 30px;
-      border-radius: 15px;
-      backdrop-filter: blur(10px);
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      text-shadow: 0 0 20px #ff3366;
+      margin-bottom: 2rem;
     }
     input {
-      width: 100%;
-      padding: 14px 16px;
-      margin: 15px 0;
+      width: 80%;
+      max-width: 400px;
+      padding: 18px;
+      font-size: 1.4rem;
       border: none;
-      border-radius: 8px;
-      font-size: 17px;
-      background: rgba(255, 255, 255, 0.12);
+      border-radius: 12px;
+      background: rgba(255,255,255,0.15);
       color: white;
+      text-align: center;
       outline: none;
-      transition: all 0.3s;
-    }
-    input:focus {
-      background: rgba(255, 255, 255, 0.22);
-      box-shadow: 0 0 15px rgba(255, 51, 102, 0.5);
     }
     input::placeholder {
       color: #aaa;
     }
-    #videoContainer {
-      margin: 25px 0;
+    #videoScreen {
+      position: fixed;
+      inset: 0;
+      background: #000;
       display: none;
-      border-radius: 12px;
-      overflow: hidden;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.7);
+      align-items: center;
+      justify-content: center;
     }
     video {
       width: 100%;
-      display: block;
-    }
-    #message {
-      font-size: 18px;
-      margin-top: 15px;
-      color: #ffcc00;
-      text-shadow: 0 0 5px #000;
+      height: 100%;
+      object-fit: cover;   /* ya contain agar poora dikhana ho */
     }
   </style>
 </head>
 <body>
 
-  <div class="container">
+  <!-- Starting screen (naam daalne wala) -->
+  <div id="initialScreen">
     <h1>Apna Naam Likh Do... 😏</h1>
-    
-    <input type="text" id="name" placeholder="Naam daalo (minimum 3 letter)" autocomplete="off">
-    
-    <input type="date" id="dob">
-    
-    <div id="videoContainer">
-      <video id="prankVideo" controls autoplay loop muted>
-        <source id="videoSrc" src="" type="video/mp4">
-        Sorry, video nahi chal raha...
-      </video>
-    </div>
-    
-    <div id="message"></div>
+    <input type="text" id="name" placeholder="Minimum 3 letter" autocomplete="off" autofocus>
+  </div>
+
+  <!-- Full screen video (sirf yahi dikhega baad mein) -->
+  <div id="videoScreen">
+    <video id="prankVideo" autoplay loop muted playsinline>
+      <source id="videoSrc" src="" type="video/mp4">
+      Browser video support nahi kar raha
+    </video>
   </div>
 
   <script>
-    const nameInput = document.getElementById('name');
-    const videoContainer = document.getElementById('videoContainer');
-    const video = document.getElementById('prankVideo');
-    const source = document.getElementById('videoSrc');
-    const msg = document.getElementById('message');
+    const nameInput     = document.getElementById('name');
+    const initialScreen = document.getElementById('initialScreen');
+    const videoScreen   = document.getElementById('videoScreen');
+    const video         = document.getElementById('prankVideo');
+    const source        = document.getElementById('videoSrc');
 
-    // ─────────────────────────────────────────────
-    //     Yahan sirf yeh 3 cheezein badlo
-    // ─────────────────────────────────────────────
-    const USERNAME = "nsti";               // apna GitHub username (small letters)
-    const REPO     = "prank";              // repo ka naam
-    const FILE     = "2";                  // file ka naam → agar .mp4 hai to "2.mp4" likh do
-    const BRANCH   = "main";               // mostly "main", agar "master" hai to badal dena
-    // ─────────────────────────────────────────────
+    // ────────────────────────────────────────────────
+    // Sirf yeh 4 lines badlo apne hisaab se
+    const USERNAME = "nsti";
+    const REPO     = "prank";
+    const FILE     = "2";          // agar extension hai to "2.mp4" likh do
+    const BRANCH   = "main";
+    // ────────────────────────────────────────────────
 
     const videoURL = `https://raw.githubusercontent.com/${USERNAME}/${REPO}/${BRANCH}/${FILE}`;
 
+    // Agar GitHub Pages use kar rahe ho to yeh URL try kar sakte ho:
+    // const videoURL = `https://${USERNAME}.github.io/${REPO}/${FILE}`;
+
     nameInput.addEventListener('input', () => {
       const text = nameInput.value.trim();
-      
+
       if (text.length >= 3) {
+        // Video set karo
         source.src = videoURL;
         video.load();
-        videoContainer.style.display = "block";
-        msg.textContent = "Prank shuru... 😂";
 
-        // Error handling
-        video.onerror = () => {
-          msg.innerHTML = `Video nahi mila!<br>Check karo:<br>1. Repo public hai?<br>2. File ka naam sahi hai? ("${FILE}")<br>3. Username/repo/branch galat to nahi?`;
-          videoContainer.style.display = "none";
-        };
-      } 
-      else {
-        videoContainer.style.display = "none";
-        msg.textContent = text.length === 0 ? "Naam likho..." : "Aur  " + (3 - text.length) + " letter chahiye...";
+        // Starting screen fade out + hide
+        initialScreen.classList.add('hidden');
+        setTimeout(() => {
+          initialScreen.style.display = 'none';
+          videoScreen.style.display = 'flex';
+
+          // Video play karo (autoplay attribute hai, phir bhi safe taraf)
+          video.play().catch(() => {
+            // Mobile pe muted autoplay ke liye
+            video.muted = true;
+            video.play();
+          });
+        }, 600); // fade ke baad hide
       }
     });
+
+    // Optional: video load fail hone pe kuch dikhao (debug ke liye)
+    video.onerror = () => {
+      document.body.innerHTML = '<h1 style="color:white; text-align:center; margin-top:40vh;">Video nahi mila 😢<br>Repo public banao + file check karo</h1>';
+    };
   </script>
 
 </body>
