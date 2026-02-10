@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Naam se Video Play</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f0f4f8;
+      padding: 30px;
+      text-align: center;
+    }
+    h1 {
+      color: #2c3e50;
+    }
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+    input {
+      width: 100%;
+      padding: 12px;
+      margin: 12px 0;
+      border: 2px solid #3498db;
+      border-radius: 6px;
+      font-size: 17px;
+    }
+    #videoContainer {
+      margin-top: 25px;
+      display: none;
+    }
+    video {
+      width: 100%;
+      max-height: 400px;
+      border-radius: 10px;
+      box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+    }
+    #message {
+      margin-top: 15px;
+      font-size: 18px;
+      color: #e74c3c;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h1>Apna Naam aur DOB Daalo</h1>
+    
+    <input type="text" id="name" placeholder="Apna naam likho (kam se kam 3 letter)" autocomplete="off">
+    
+    <input type="date" id="dob" placeholder="Date of Birth">
+    
+    <div id="videoContainer">
+      <video id="myVideo" controls autoplay muted>
+        <source id="videoSource" src="" type="video/mp4">
+        Sorry, yeh browser video support nahi karta.
+      </video>
+    </div>
+    
+    <div id="message"></div>
+  </div>
+
+  <script>
+    const nameInput = document.getElementById('name');
+    const videoContainer = document.getElementById('videoContainer');
+    const videoElement = document.getElementById('myVideo');
+    const videoSource = document.getElementById('videoSource');
+    const message = document.getElementById('message');
+
+    // Yeh change karna zaroori hai – tumhare GitHub ke hisaab se
+    const githubUser = "YOUR_GITHUB_USERNAME";          // ← yaha apna username daalo
+    const githubRepo  = "YOUR_PUBLIC_REPO_NAME";        // ← repo ka naam
+    const branch      = "main";                         // mostly "main" ya "master"
+
+    // Example: agar naam ke pehle 3 letter "rah" hain to video1.mp4
+    // "pri" → video2.mp4 etc.
+    // Tum apne hisaab se mapping bana sakte ho
+    const videoMap = {
+      "rah": "video1.mp4",
+      "pri": "video2.mp4",
+      "saa": "video3.mp4",
+      "aaa": "intro.mp4",
+      // aur jitne chahiye utne add kar do
+      // default video agar match na ho to
+      "default": "default-video.mp4"
+    };
+
+    nameInput.addEventListener('input', function() {
+      const name = nameInput.value.trim().toLowerCase();
+      message.textContent = "";
+
+      if (name.length >= 3) {
+        // pehle 3 letters
+        const prefix = name.substring(0, 3);
+        
+        // mapping se video file name nikaalo
+        let videoFile = videoMap[prefix] || videoMap["default"];
+        
+        // GitHub raw URL banao
+        const videoUrl = `https://raw.githubusercontent.com/${githubUser}/${githubRepo}/${branch}/${videoFile}`;
+
+        // ya agar GitHub Pages use kar rahe ho to:
+        // const videoUrl = `https://${githubUser}.github.io/${githubRepo}/${videoFile}`;
+
+        videoSource.src = videoUrl;
+        videoElement.load();
+
+        // video dikhane ki koshish
+        videoContainer.style.display = "block";
+
+        // optional: error handling
+        videoElement.onerror = () => {
+          message.textContent = "Video nahi mila ya link galat hai! GitHub URL check karo.";
+          videoContainer.style.display = "none";
+        };
+
+      } else {
+        videoContainer.style.display = "none";
+        message.textContent = "Naam mein kam se kam 3 letter daalo...";
+      }
+    });
+  </script>
+
+</body>
+</html>
