@@ -8,50 +8,26 @@
     * { margin:0; padding:0; box-sizing:border-box; }
     html, body { height:100%; width:100%; overflow:hidden; background:#000; font-family:Arial, sans-serif; }
     #initialScreen { position:fixed; inset:0; background:linear-gradient(135deg, #0f0c29, #302b63, #24243e); color:white; display:flex; flex-direction:column; align-items:center; justify-content:center; z-index:10; height:100vh; width:100vw; }
-    h1 { font-size: clamp(2rem, 10vw, 4rem); color:#ff0000; text-shadow:0 0 30px #ff0000; margin-bottom:3rem; text-align:center; animation: pulse 2s infinite; }
-    @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
-    input { width:85%; max-width:450px; padding:20px 30px; font-size: clamp(1.3rem, 6vw, 1.8rem); margin:20px 0; border:none; border-radius:15px; background:rgba(255,255,255,0.15); color:white; text-align:center; outline:none; box-shadow:0 0 30px rgba(255,0,0,0.5); }
-    input::placeholder { color:#ccc; }
-    #videoScreen { position:fixed; inset:0; background:#000; display:none; z-index:5; height:100vh; width:100vw; overflow:hidden; }
-    video { width:100%; height:100%; object-fit:cover; object-position:center; cursor:pointer; } /* Video pe cursor pointer for click hint */
-    #fsBtn {
-      position: absolute;
-      bottom: 40px;
-      left: 50%;
-      transform: translateX(-50%);
-      z-index: 30;
-      padding: 20px 40px;
-      font-size: 1.8rem;
-      font-weight: bold;
-      background: linear-gradient(#ff0000, #cc0000);
-      color: white;
-      border: none;
-      border-radius: 60px;
-      cursor: pointer;
-      box-shadow: 0 0 40px #ff0000, 0 0 80px #ff0000;
-      opacity: 0.95;
-      transition: all 0.4s;
-      animation: glow 1.5s infinite alternate;
-    }
-    @keyframes glow { from { box-shadow: 0 0 40px #ff0000; } to { box-shadow: 0 0 80px #ff0000, 0 0 120px #ff0000; } }
-    #fsBtn:hover { transform: translateX(-50%) scale(1.15); opacity:1; }
+    h1 { font-size: clamp(2.5rem, 12vw, 5rem); color:#ff0000; text-shadow:0 0 50px #ff0000; margin-bottom:3rem; text-align:center; animation: pulse 1.5s infinite; }
+    @keyframes pulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.1); } }
+    input { width:85%; max-width:500px; padding:25px 40px; font-size: clamp(1.5rem, 8vw, 2.2rem); margin:25px 0; border:none; border-radius:25px; background:rgba(255,255,255,0.1); color:white; text-align:center; outline:none; box-shadow:0 0 50px rgba(255,0,0,0.7); }
+    input::placeholder { color:#aaa; }
+    #videoScreen { position:fixed; inset:0; background:#000; display:none; z-index:5; height:100vh; width:100vw; overflow:hidden; cursor:pointer; } /* Click hint */
+    video { width:100%; height:100%; object-fit:cover; object-position:center; }
     #unmuteBtn {
       position: absolute;
-      top: 30px;
-      right: 30px;
+      top: 40px;
+      right: 40px;
       z-index: 30;
-      padding: 15px 30px;
-      font-size: 1.3rem;
-      background:#ff3366;
+      padding: 18px 40px;
+      font-size: 1.5rem;
+      background:#ff0000;
       color:white;
       border:none;
-      border-radius:50px;
+      border-radius:70px;
       cursor:pointer;
-      box-shadow:0 0 20px #ff3366;
+      box-shadow:0 0 40px #ff0000;
       display:none;
-    }
-    @media (max-width: 768px) {
-      #fsBtn { padding:15px 30px; font-size:1.4rem; bottom:25px; }
     }
   </style>
 </head>
@@ -62,8 +38,7 @@
     <input type="date" id="dob" placeholder="Enter Your Dob">
   </div>
   <div id="videoScreen">
-    <button id="unmuteBtn">🔊 Sound On</button>
-    <button id="fsBtn">CLICK KARO – FULL SCREEN PRANK 😈</button>
+    <button id="unmuteBtn">🔊 Sound On Karo</button>
     <video id="prankVideo" autoplay loop playsinline muted>
       <source id="videoSrc" src="" type="video/mp4">
       Video nahi chal raha...
@@ -76,7 +51,6 @@
     const video = document.getElementById('prankVideo');
     const source = document.getElementById('videoSrc');
     const unmuteBtn = document.getElementById('unmuteBtn');
-    const fsBtn = document.getElementById('fsBtn');
 
     const USERNAME = "copai093-ops";
     const REPO = "Users";
@@ -86,15 +60,28 @@
 
     function enterFullscreen() {
       const elem = document.documentElement;
-      if (elem.requestFullscreen) elem.requestFullscreen();
-      else if (elem.webkitRequestFullscreen) elem.webkitRequestFullscreen();
+      if (elem.requestFullscreen) {
+        elem.requestFullscreen().catch(err => console.log("FS error:", err));
+      } else if (elem.webkitRequestFullscreen) elem.webkitRequestFullscreen();
       else if (elem.mozRequestFullScreen) elem.mozRequestFullScreen();
       else if (elem.msRequestFullscreen) elem.msRequestFullscreen();
     }
 
+    // Name input pe Enter key press se fullscreen (gesture count hota hai)
+    nameInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault(); // Form submit na ho
+        if (nameInput.value.trim().length >= 3) {
+          triggerVideoAndFS();
+        }
+      }
+    });
+
+    // Input change pe check (lekin FS sirf gesture pe)
     nameInput.addEventListener('input', () => {
       const text = nameInput.value.trim();
       if (text.length >= 3) {
+        // Sirf video start, FS nahi (kyunki no gesture)
         source.src = videoURL;
         video.load();
         initialScreen.style.display = 'none';
@@ -102,47 +89,50 @@
 
         video.muted = true;
         video.play().then(() => {
-          console.log("Jump scare started! 🔥");
-          // Button ko show kar do – yeh hi best hai ab
-          fsBtn.style.display = 'block';
+          console.log("Video started – click video or press Enter for full screen");
         }).catch(err => {
           console.log("Autoplay blocked:", err);
           unmuteBtn.style.display = 'block';
-          fsBtn.style.display = 'block';
         });
       }
     });
 
-    // Extra: Video pe direct click se bhi fullscreen (gesture count hoga)
+    // Video pe click se fullscreen (natural gesture)
     video.addEventListener('click', () => {
       enterFullscreen();
-      fsBtn.style.display = 'none';
     });
 
+    // Sound on
     unmuteBtn.addEventListener('click', () => {
       video.muted = false;
       video.volume = 1.0;
       unmuteBtn.style.display = 'none';
     });
 
-    fsBtn.addEventListener('click', () => {
-      enterFullscreen();
-      fsBtn.style.display = 'none';
-    });
+    // Helper to trigger video (called from Enter)
+    function triggerVideoAndFS() {
+      source.src = videoURL;
+      video.load();
+      initialScreen.style.display = 'none';
+      videoScreen.style.display = 'block';
 
-    document.addEventListener('fullscreenchange', () => {
-      if (!document.fullscreenElement) {
-        fsBtn.style.display = 'block';
-      }
-    });
+      video.muted = true;
+      video.play().then(() => {
+        enterFullscreen(); // Enter key gesture se FS try
+      }).catch(err => {
+        console.log("Play error:", err);
+        unmuteBtn.style.display = 'block';
+        enterFullscreen(); // Try anyway (gesture se)
+      });
+    }
 
     video.onerror = () => {
       document.body.innerHTML = `<div style="color:white; text-align:center; margin-top:40vh; font-size:2rem;">
-        Video nahi chal raha 😢<br>Link check: <a href="${videoURL}" style="color:#ff3366;">${videoURL}</a>
+        Video nahi chal raha 😢
       </div>`;
     };
 
-    console.log("Prank ready. Video:", videoURL);
+    console.log("Prank loaded. Video:", videoURL);
   </script>
 </body>
 </html>
