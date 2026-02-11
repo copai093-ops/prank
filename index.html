@@ -2,10 +2,7 @@
 <html lang="hi">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui, viewport-fit=cover" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Prank Mode 😈</title>
   <style>
     * { margin:0; padding:0; box-sizing:border-box; }
@@ -15,17 +12,30 @@
     @keyframes pulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.1); } }
     input { width:85%; max-width:500px; padding:25px 40px; font-size: clamp(1.5rem, 8vw, 2.2rem); margin:25px 0; border:none; border-radius:25px; background:rgba(255,255,255,0.1); color:white; text-align:center; outline:none; box-shadow:0 0 50px rgba(255,0,0,0.7); }
     input::placeholder { color:#aaa; }
-    #videoScreen { position:fixed; inset:0; background:#000; display:none; z-index:5; height:100vh; width:100vw; overflow:hidden; cursor:pointer; }
+    #videoScreen { position:fixed; inset:0; background:#000; display:none; z-index:5; height:100vh; width:100vw; overflow:hidden; cursor:pointer; } /* Click hint */
     video { width:100%; height:100%; object-fit:cover; object-position:center; }
-    #unmuteBtn { position: absolute; top: 40px; right: 40px; z-index: 30; padding: 18px 40px; font-size: 1.5rem; background:#ff0000; color:white; border:none; border-radius:70px; cursor:pointer; box-shadow:0 0 40px #ff0000; display:none; }
+    #unmuteBtn {
+      position: absolute;
+      top: 40px;
+      right: 40px;
+      z-index: 30;
+      padding: 18px 40px;
+      font-size: 1.5rem;
+      background:#ff0000;
+      color:white;
+      border:none;
+      border-radius:70px;
+      cursor:pointer;
+      box-shadow:0 0 40px #ff0000;
+      display:none;
+    }
   </style>
 </head>
 <body>
   <div id="initialScreen">
     <h1>Apna Naam Likh Do... 😱</h1>
     <input type="text" id="name" placeholder="Enter Your Name" autocomplete="off" autofocus>
-    <!-- Date optional, agar nahi chahiye to remove kar sakta hai -->
-    <!-- <input type="date" id="dob" placeholder="Enter Your Dob"> -->
+    <input type="date" id="dob" placeholder="Enter Your Dob">
   </div>
   <div id="videoScreen">
     <button id="unmuteBtn">🔊 Sound On Karo</button>
@@ -34,7 +44,6 @@
       Video nahi chal raha...
     </video>
   </div>
-
   <script>
     const nameInput = document.getElementById('name');
     const initialScreen = document.getElementById('initialScreen');
@@ -42,67 +51,77 @@
     const video = document.getElementById('prankVideo');
     const source = document.getElementById('videoSrc');
     const unmuteBtn = document.getElementById('unmuteBtn');
-
-    const videoURL = "https://raw.githack.com/copai093-ops/Users/main/3.mp4";
-
+    const USERNAME = "copai093-ops";
+    const REPO = "Users";
+    const FILE = "3.mp4";
+    const BRANCH = "main";
+    const videoURL = `https://raw.githack.com/${USERNAME}/${REPO}/${BRANCH}/${FILE}`;
     function enterFullscreen() {
       const elem = document.documentElement;
-      if (!document.fullscreenElement) {
-        elem.requestFullscreen?.().catch(() => {});
-        elem.webkitRequestFullscreen?.();
-        elem.mozRequestFullScreen?.();
-        elem.msRequestFullscreen?.();
-      }
+      if (elem.requestFullscreen) {
+        elem.requestFullscreen().catch(err => console.log("FS error:", err));
+      } else if (elem.webkitRequestFullscreen) elem.webkitRequestFullscreen();
+      else if (elem.mozRequestFullScreen) elem.mozRequestFullScreen();
+      else if (elem.msRequestFullscreen) elem.msRequestFullscreen();
     }
-
-    function showPrank() {
-      if (nameInput.value.trim().length < 3) {
-        nameInput.style.boxShadow = "0 0 20px yellow";
-        setTimeout(() => { nameInput.style.boxShadow = "0 0 50px rgba(255,0,0,0.7)"; }, 1000);
-        return;
+    // Name input pe Enter key press se fullscreen (gesture count hota hai)
+    nameInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault(); // Form submit na ho
+        if (nameInput.value.trim().length >= 3) {
+          triggerVideoAndFS();
+        }
       }
-
+    });
+    // Input change pe check (lekin FS sirf gesture pe)
+    nameInput.addEventListener('input', () => {
+      const text = nameInput.value.trim();
+      if (text.length >= 3) {
+        // Sirf video start, FS nahi (kyunki no gesture)
+        source.src = videoURL;
+        video.load();
+        initialScreen.style.display = 'none';
+        videoScreen.style.display = 'block';
+        video.muted = true;
+        video.play().then(() => {
+          console.log("Video started – click video or press Enter for full screen");
+        }).catch(err => {
+          console.log("Autoplay blocked:", err);
+          unmuteBtn.style.display = 'block';
+        });
+      }
+    });
+    // Video pe click se fullscreen (natural gesture)
+    video.addEventListener('click', () => {
+      enterFullscreen();
+    });
+    // Sound on
+    unmuteBtn.addEventListener('click', () => {
+      video.muted = false;
+      video.volume = 1.0;
+      unmuteBtn.style.display = 'none';
+    });
+    // Helper to trigger video (called from Enter)
+    function triggerVideoAndFS() {
       source.src = videoURL;
       video.load();
       initialScreen.style.display = 'none';
       videoScreen.style.display = 'block';
-
+      video.muted = true;
       video.play().then(() => {
-        enterFullscreen();
-      }).catch(() => {
+        enterFullscreen(); // Enter key gesture se FS try
+      }).catch(err => {
+        console.log("Play error:", err);
         unmuteBtn.style.display = 'block';
-        enterFullscreen();
+        enterFullscreen(); // Try anyway (gesture se)
       });
     }
-
-    nameInput.addEventListener('keydown', e => {
-      if (e.key === 'Enter') {
-        e.preventDefault();
-        showPrank();
-      }
-    });
-
-    video.addEventListener('click', () => {
-      enterFullscreen();
-      video.muted = false;
-      unmuteBtn.style.display = 'none';
-    });
-
-    unmuteBtn.addEventListener('click', () => {
-      video.muted = false;
-      video.volume = 1;
-      unmuteBtn.style.display = 'none';
-      enterFullscreen();
-    });
-
     video.onerror = () => {
-      videoScreen.innerHTML = `<div style="color:white; text-align:center; margin-top:40vh; font-size:2rem;">
-        Video nahi mila 😢<br>Check kar: 3.mp4 repo mein upload hai?
+      document.body.innerHTML = `<div style="color:white; text-align:center; margin-top:40vh; font-size:2rem;">
+        Video nahi chal raha 😢
       </div>`;
     };
-
-    // Auto focus name input
-    nameInput.focus();
+    console.log("Prank loaded. Video:", videoURL);
   </script>
 </body>
 </html>
