@@ -35,35 +35,36 @@
   </style>
 </head>
 <body>
-
   <div id="initialScreen">
     <h1>Apna Naam Likh Do... 😏</h1>
     <input type="text" id="name" placeholder="Enter Your Name" autocomplete="off" autofocus>
     <input type="date" id="dob" placeholder="Enter Your Dob">
   </div>
-
   <div id="videoScreen">
     <button id="unmuteBtn">🔊 Sound On (agar nahi chal raha ho)</button>
-    <video id="prankVideo" autoplay loop playsinline>
-      <source id="videoSrc" src="3" type="video/mp4">
-      Video load nahi ho raha...
+    <video id="prankVideo" autoplay loop playsinline muted>
+      <source id="videoSrc" src="" type="video/mp4">
+      Video load nahi ho raha... Browser support nahi hai ya file galat hai.
     </video>
   </div>
 
   <script>
-    const nameInput     = document.getElementById('name');
+    const nameInput = document.getElementById('name');
     const initialScreen = document.getElementById('initialScreen');
-    const videoScreen   = document.getElementById('videoScreen');
-    const video         = document.getElementById('prankVideo');
-    const source        = document.getElementById('videoSrc');
-    const unmuteBtn     = document.getElementById('unmuteBtn');
+    const videoScreen = document.getElementById('videoScreen');
+    const video = document.getElementById('prankVideo');
+    const source = document.getElementById('videoSrc');
+    const unmuteBtn = document.getElementById('unmuteBtn');
 
     const USERNAME = "copai093-ops";
-    const REPO     = "Users";
-    const FILE     = "3";  // agar .mp4 rename kiya to yahan update kar dena
-    const BRANCH   = "main";
+    const REPO = "Users";
+    const FILE = "3.mp4";          // ← यहाँ rename करके .mp4 जरूर जोड़ दो repo में!
+    const BRANCH = "main";
 
     const videoURL = `https://raw.githubusercontent.com/${USERNAME}/${REPO}/${BRANCH}/${FILE}`;
+
+    // अल्टरनेटिव अगर GitHub raw MIME issue दे (कई बार बेहतर काम करता है):
+    // const videoURL = `https://raw.githack.com/${USERNAME}/${REPO}/${BRANCH}/${FILE}`;
 
     nameInput.addEventListener('input', () => {
       const text = nameInput.value.trim();
@@ -74,36 +75,36 @@
         initialScreen.style.display = 'none';
         videoScreen.style.display = 'flex';
 
-        // Try unmuted autoplay
-        video.muted = false;
-        video.volume = 1.0;
-
+        // पहले muted autoplay ट्राई करो (policy के कारण)
+        video.muted = true;
         const playPromise = video.play();
 
         playPromise.then(() => {
-          // Success: sound chal gaya (kuch browsers allow kar sakte hain)
-          unmuteBtn.style.display = 'none';
+          console.log("Muted autoplay success");
+          // अगर sound चाहिए तो user click पर unmute
         }).catch(err => {
-          console.log("Unmuted play blocked:", err);
-          // Fallback: muted play karo + button dikhao
-          video.muted = true;
-          video.play();
+          console.log("Autoplay blocked:", err);
           unmuteBtn.style.display = 'block';
         });
       }
     });
 
-    // User click pe force unmute
+    // Unmute button click पर sound on
     unmuteBtn.addEventListener('click', () => {
       video.muted = false;
       video.volume = 1.0;
       unmuteBtn.style.display = 'none';
     });
 
+    // Error handling
     video.onerror = () => {
-      document.body.innerHTML = '<div style="color:white; text-align:center; margin-top:40vh; font-size:1.5rem;">Video nahi chal raha 😢<br>File check karo ya rename karke .mp4 banao</div>';
+      document.body.innerHTML = `<div style="color:white; text-align:center; margin-top:40vh; font-size:1.5rem;">
+        Video nahi chal raha 😢<br>
+        1. Repo mein file ka naam "3.mp4" (dot mp4 ke saath) rakho<br>
+        2. Direct URL check karo: <a href="${videoURL}" style="color:#ff3366;">${videoURL}</a><br>
+        Agar yeh browser mein play/download nahi hota to file galat hai ya repo private hai.
+      </div>`;
     };
   </script>
-
 </body>
 </html>
