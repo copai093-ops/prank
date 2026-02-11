@@ -2,36 +2,88 @@
 <html lang="hi">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <!-- Yeh viewport tag mobile pe page ko device width ke anusar scale karta hai – full responsive banata hai -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Prank Mode 😈</title>
   <style>
     * { margin:0; padding:0; box-sizing:border-box; }
-    body { background:#000; height:100vh; overflow:hidden; font-family:Arial, sans-serif; }
+    html, body {
+      height: 100%;
+      width: 100%;
+      overflow: hidden; /* No scroll bars */
+      background: #000;
+      font-family: Arial, sans-serif;
+    }
     #initialScreen {
-      position:fixed; inset:0;
-      background:linear-gradient(135deg, #0f0c29, #302b63, #24243e);
-      color:white; display:flex; flex-direction:column;
-      align-items:center; justify-content:center; z-index:10;
+      position: fixed;
+      inset: 0;
+      background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+      color: white;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 10;
+      height: 100vh;
+      width: 100vw;
     }
-    h1 { font-size:3.2rem; color:#ff3366; text-shadow:0 0 25px #ff3366; margin-bottom:2.5rem; }
+    h1 { font-size: 3.2rem; color: #ff3366; text-shadow: 0 0 25px #ff3366; margin-bottom: 2.5rem; }
     input {
-      width:85%; max-width:420px; padding:18px 24px; font-size:1.5rem; margin:15px 0;
-      border:none; border-radius:12px; background:rgba(255,255,255,0.18); color:white;
-      text-align:center; outline:none; box-shadow:0 0 20px rgba(0,0,0,0.4);
+      width: 85%;
+      max-width: 420px;
+      padding: 18px 24px;
+      font-size: 1.5rem;
+      margin: 15px 0;
+      border: none;
+      border-radius: 12px;
+      background: rgba(255,255,255,0.18);
+      color: white;
+      text-align: center;
+      outline: none;
+      box-shadow: 0 0 20px rgba(0,0,0,0.4);
     }
-    input::placeholder { color:#ccc; }
+    input::placeholder { color: #ccc; }
+
     #videoScreen {
-      position:fixed; inset:0; background:#000; display:none;
-      align-items:center; justify-content:center; z-index:5;
+      position: fixed;
+      inset: 0;
+      background: #000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 5;
+      height: 100vh;
+      width: 100vw;
+      overflow: hidden;
     }
-    video { width:100%; height:100%; object-fit:cover; }
+    video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover; /* Yeh important: video ko pura cover karta hai, crop karke fit karta hai har screen pe */
+      object-position: center; /* Center mein rakhta hai */
+    }
     #unmuteBtn {
-      position:absolute; top:20px; right:20px; z-index:20;
-      padding:12px 20px; font-size:1.1rem; background:#ff3366; color:white;
-      border:none; border-radius:50px; cursor:pointer; box-shadow:0 0 15px #ff3366;
-      display:none;
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      z-index: 20;
+      padding: 12px 20px;
+      font-size: 1.1rem;
+      background: #ff3366;
+      color: white;
+      border: none;
+      border-radius: 50px;
+      cursor: pointer;
+      box-shadow: 0 0 15px #ff3366;
+      display: none;
     }
-    #unmuteBtn:hover { background:#ff1a4d; }
+    #unmuteBtn:hover { background: #ff1a4d; }
+
+    /* Mobile ke liye extra responsive tweaks */
+    @media (max-width: 768px) {
+      h1 { font-size: 2.5rem; }
+      input { font-size: 1.2rem; padding: 15px 20px; }
+    }
   </style>
 </head>
 <body>
@@ -60,15 +112,12 @@
     const FILE = "3.mp4";
     const BRANCH = "main";
 
-    // Best working URL for video streaming (range requests support karta hai)
+    // raw.githack best hai streaming ke liye (range requests support)
     const videoURL = `https://raw.githack.com/${USERNAME}/${REPO}/${BRANCH}/${FILE}`;
-
-    // Optional: Agar DOB bhi check karna ho to yeh uncomment kar do
-    // const dobInput = document.getElementById('dob');
 
     nameInput.addEventListener('input', () => {
       const text = nameInput.value.trim();
-      if (text.length >= 3) {  // Ya agar DOB check karna ho: && dobInput.value
+      if (text.length >= 3) {
         source.src = videoURL;
         video.load();
         initialScreen.style.display = 'none';
@@ -77,9 +126,9 @@
         video.muted = true;
         const playPromise = video.play();
         playPromise.then(() => {
-          console.log("Muted autoplay success! Prank on 🔥");
+          console.log("Muted autoplay success! Prank full screen on 🔥");
         }).catch(err => {
-          console.log("Autoplay blocked (normal browsers mein):", err);
+          console.log("Autoplay blocked:", err);
           unmuteBtn.style.display = 'block';
         });
       }
@@ -91,20 +140,16 @@
       unmuteBtn.style.display = 'none';
     });
 
-    // Better error handling
     video.onerror = () => {
-      console.error("Video load failed. Check console for details.");
+      console.error("Video load failed.");
       document.body.innerHTML = `<div style="color:white; text-align:center; margin-top:40vh; font-size:1.5rem;">
         Video nahi chal raha 😢<br><br>
-        Possible reasons:<br>
-        1. Browser mein video format/support issue (Chrome/Firefox try karo)<br>
-        2. File corrupt - repo mein delete + fresh upload karo<br>
-        3. Direct check: <a href="${videoURL}" style="color:#ff3366;" target="_blank">${videoURL}</a><br>
-        (Yeh link browser mein play/download hona chahiye)
+        1. Direct check: <a href="${videoURL}" style="color:#ff3366;" target="_blank">${videoURL}</a> (browser mein play hona chahiye)<br>
+        2. File delete + fresh upload try karo repo mein<br>
+        3. Chrome/Firefox use karo, Safari mein kabhi strict hota hai
       </div>`;
     };
 
-    // Extra: Page load pe console check
     console.log("Prank site loaded. Video URL:", videoURL);
   </script>
 </body>
