@@ -14,7 +14,6 @@
     input::placeholder { color:#aaa; }
     #videoScreen, #imageScreen { position:fixed; inset:0; background:#000; display:none; z-index:5; height:100vh; width:100vw; overflow:hidden; cursor:pointer; }
     video, img { width:100%; height:100%; object-fit:cover; object-position:center; }
-    #audio { display:none; }
   </style>
 </head>
 <body>
@@ -101,23 +100,20 @@
     function startPrankSequence() {
       initialScreen.style.display = 'none';
 
-      // ── 1. Video phase (6 seconds) + vibration ──
       videoScreen.style.display = 'block';
       videoSrc.src = videoURL;
       video.load();
       video.muted = true;
       video.play().catch(()=>{});
 
-      startVibration();           // ← vibration starts here
+      startVibration();           // vibration sirf yahan se start
       enterFullscreen();
 
-      // After exactly 6 seconds: stop video + stop vibration + switch to image
       setTimeout(() => {
         video.pause();
         videoScreen.style.display = 'none';
-        stopVibration();          // ← vibration completely stops here
+        stopVibration();          // video khatam → vibration band
 
-        // ── 2. Image + looping sound (no vibration) ──
         imageScreen.style.display = 'block';
         image.src = imageURL;
 
@@ -125,7 +121,6 @@
         audio.load();
         audio.play().catch(e => console.log("Autoplay blocked", e));
 
-        // Optional: hide image after 15 sec (sound keeps playing)
         setTimeout(() => {
           imageScreen.style.display = 'none';
         }, 15000);
@@ -133,7 +128,7 @@
       }, 6000);
     }
 
-    // Trigger on Enter key (best for sound + fullscreen)
+    // Trigger on Enter (sabse reliable sound + fullscreen ke liye)
     nameInput.addEventListener('keydown', (e) => {
       if (e.key === 'Enter') {
         e.preventDefault();
@@ -144,20 +139,19 @@
       }
     });
 
-    // Optional quick trigger while typing
+    // Typing se bhi trigger (optional, agar Enter na dabaye to)
     nameInput.addEventListener('input', () => {
       if (nameInput.value.trim().length >= 3) {
         startPrankSequence();
       }
     });
 
-    // Tap anywhere → try to unmute + extra vibrate + fullscreen
-    document.addEventListener('click', () => {
+    // Extra: sirf video screen pe click karne se strong vibrate + unmute (input pe nahi chalega)
+    videoScreen.addEventListener('click', () => {
       enterFullscreen();
       unmuteVideo();
       audio.play().catch(()=>{});
-      // Optional: single strong vibrate on tap (only if you want it outside video phase)
-      navigator.vibrate?.([800]);
+      navigator.vibrate?.([800]);   // strong single vibrate on video tap
     });
 
     // Error handling
